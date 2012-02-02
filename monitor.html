@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Automusic</title>
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+		<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+		<script type="text/javascript" src="https://raw.github.com/andyet/ICanHaz.js/master/ICanHaz.min.js"></script>  
+		<script id="tdisc" type="text/html">
+			<div class="disc" id="disc-{{id}}">
+				<p class="id">{{id}}</p>
+				<div class="releases">
+				{{#releases}}
+					{{> trelease}}
+				{{/releases}}
+				{{^releases}}
+					<div><span class="warn">NO RELEASES FOUND</span><div>
+				{{/releases}}
+				</div>
+			</div>
+		</script>
+		<script id="trelease" type="text/html">
+			<div class="release" id="release-{{id}}">
+				<div class="info">
+					<span class="id">{{id}}</span>
+					<span class="title">{{title}}</span>
+					<span class="date">{{date}}</span>
+					<span class="country">{{country}}</span>
+					<span class="barcode">{{barcode}}</span>
+
+					<div class="labelinfos">
+					{{#labelInfo}}
+						<span class="labelinfo">
+							<span class="catalognumber">{{catalogNumber}}</span>
+							{{#label}}
+								<span class="label">{{name}}</span>
+							{{/label}}
+						</span>
+					{{/labelInfo}}
+					</div>
+
+					<div class="mediums">
+					{{#mediums}}
+						<div class="medium pos{{position}}">
+							{{#title}} <span class="title">{{title}}</span> {{/title}}
+							<span class="position">{{position}}</span>
+							<span class="format">{{format}}</span>
+							<span class="tracks">{{tracks.length}} tracks</span>
+						</div>
+					{{/mediums}}
+					</div>
+				</div>
+			</div>
+		</script>
+		<style type="text/css">
+			body, html {
+				margin: 0;
+				padding: 0;
+				background-color: #000;
+				color: #fff;
+				font-family: monospace;
+				font-size: 14px;
+			}
+
+			#inbox {
+				padding: 10px;
+			}
+
+			#inbox .disc {
+				margin-bottom: 10px;
+			}
+			#inbox .disc p.id {
+				color: #fe2e64;
+			}
+			#inbox .disc .warn {
+				color: #000;
+				background-color: #fe2e64;
+			}
+			#inbox .disc .release {
+				position: relative;
+				margin-bottom: 3px;
+			}
+			#inbox .disc .release .tracklist, 
+			#inbox .disc .release .medium, 
+			#inbox .disc .release .labelinfo {
+				margin-right: 10px;
+				background-color: transparent;
+			}
+			#inbox .disc .release:hover {
+				border-left: 10px solid #f5f6ce;
+			}
+			#inbox .disc .release.selected {
+				border-left: 10px solid #f3f781;
+			}
+			#inbox .disc .release.activated {
+				border-left: 10px solid #64fe2e;
+			}
+			#inbox .disc .release.deselected {
+				opacity: 0.25;
+			}
+			#inbox .disc .release:hover .info, 
+			#inbox .disc .release.activated .info, 
+			#inbox .disc .release.selected .info {
+				margin-left: 20px;
+			}
+			#inbox .disc .release .info {
+				margin-left: 30px;
+			}
+			#inbox .disc .release span {
+				display: inline-block;
+				margin-top: 1px;
+				margin-right: 6px;
+				padding: 0 1px 0 1px;
+				color: #58d3f7;
+				background-color: #1c1c1c;
+			}
+			#inbox .disc .release .tracklist span.track {
+				width: 18px;
+				text-align: center;
+			}
+			#inbox .disc .release .tracklist span.track.selected {
+				background-color: #f3f781;
+				color: #1c1c1c;
+			}
+			#inbox .disc .release .tracklist span.track.completed {
+				background-color: #64fe2e;
+				color: #1c1c1c;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="inbox">
+		</div>
+<script type="text/javascript">
+
+function activateRelease (rel) {
+	if (rel.hasClass('activated')) return; 
+	rel.removeClass('selected');
+	rel.addClass('activated');
+	rel.siblings().off('click');
+}
+
+function selectRelease (rel) {
+	if (rel.hasClass('selected')) return; 
+	rel.siblings().removeClass('selected');
+	rel.addClass('selected');
+}
+
+var releases = {};
+
+$(document).ready(function() {
+	console.log('ready');
+	var socket = io.connect('http://localhost:8000');
+	socket.on('disc', function (data) {
+		for (var i = 0; i < data.releases.length; i++) {
+			var release = data.releases[i];
+			releases[release.id] = release;
+		}
+
+		var disc = ich.tdisc(data);
+		$('#inbox').append(disc);
+
+		$(disc).find('.release').each(function (index, element) {
+			$(element).off('click');
+			$(element).on('click', function () {
+				var rel = $(this);
+				if (rel.hasClass('activated')) return;
+
+				var disc = rel.parents('.disc:first');
+				var discId = disc.find('.id:first').text();
+				var releaseId = rel.find('.id:first').text();
+
+				if (rel.hasClass('selected')) {
+					activateRelease(rel);
+
+					socket.emit('releaseactivated', { 'discid' : discId, 'release' : releaseId });
+
+				} else {
+					selectRelease(rel);
+					socket.emit('releaseselected', { 'discid' : discId, 'release' : releaseId });
+				}
+			});
+		});
+	});
+
+	socket.on('releaseselected', function (data) {
+		selectRelease($('#release-' + data.release));
+	});
+
+	socket.on('releaseactivated', function (data) {
+		activateRelease($('#release-' + data.release));
+
+		var discElement = $('#disc-' + data.discid);
+		discElement.find('.release').addClass('deselected');
+
+		var releaseElement = $('#release-' + data.release).removeClass('deselected');
+
+		var release = releases[data.release];
+		for (var i = 0; i < release.mediums.length; i++) {
+			var tracklistElement = $('<span class="tracklist"/>');
+			releaseElement.find('.medium.pos' + (i+1)).first().append(tracklistElement);
+
+			for (var ii = 0; ii < release.mediums[i].tracks.length; ii++) {
+				var trackElement = $('<span class="track selected" />');
+				trackElement.text(release.mediums[i].tracks[ii].position);
+				tracklistElement.append(trackElement);
+			}
+		}
+
+	});
+
+});
+</script>
+	</body>
+</html>
