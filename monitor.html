@@ -37,6 +37,9 @@
 							{{/label}}
 						</span>
 					{{/labelInfo}}
+					{{^labelInfo}}
+						<span class="warn">NO LABEL INFO</span>
+					{{/labelInfo}}
 					</div>
 
 					<div class="mediums">
@@ -47,6 +50,9 @@
 							<span class="format">{{format}}</span>
 							<span class="tracks">{{tracks.length}} tracks</span>
 						</div>
+					{{/mediums}}
+					{{^mediums}}
+						<div><span class="warn">NO MEDIUMS</span><div>
 					{{/mediums}}
 					</div>
 				</div>
@@ -73,8 +79,8 @@
 				color: #fe2e64;
 			}
 			#inbox .disc .warn {
-				color: #000;
-				background-color: #fe2e64;
+				color: #000 !important;
+				background-color: #fe2e64 !important;
 			}
 			#inbox .disc .release {
 				position: relative;

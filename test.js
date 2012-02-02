@@ -119,6 +119,50 @@ mb.lookupCache = function (uri, callback, lookup) {
 	}
 };
 
+function handleFLAC (resolvedPath, next) {
+	metaflac.vorbisComment(resolvedPath, function (err, tags) {
+		if (err) { console.log(resolvedPath, err); next(); return; }
+
+		mb.lookupDiscId(tags['MUSICBRAINZ_DISCID'], [], function (err, disc) {
+			if (err) { console.log(resolvedPath, err.data()); next(); return; }
+
+			if (typeof trackQueue[disc.id] === 'undefined') {
+				trackQueue[disc.id] = { 'releases' : {}, 'callbacks' : [], 'complete' : false, 'activated' : false, 'release' : null };
+			}
+
+			tagTrack(disc.id, function (releaseId) {
+				console.log(tags['MUSICBRAINZ_DISCID'], tags['TRACKNUMBER'], releaseId);
+				console.log(resolvedPath);
+			});
+
+			var counter = disc.releases.length;
+			for (var i = 0; i < disc.releases.length; i++) {
+				(function(_i) {
+					var release = disc.releases[_i];
+					release.load(['release-groups', 'recordings', 'mediums', 'labels'], function () {
+						if (typeof trackQueue[disc.id].releases[release.id] === 'undefined') {
+							trackQueue[disc.id].releases[release.id] = release;
+						}
+
+						if (typeof release.releaseGroups[0] === 'undefined') {
+							console.log('no groups:', release.id);
+						}
+
+						if (!--counter) {
+							if (!trackQueue[disc.id].complete) {
+								io.sockets.emit('disc', disc);
+								trackQueue[disc.id].complete = true;
+							}
+						}
+					});
+				})(i);
+			}
+
+		});
+	});
+
+}
+
 function start () {
 	walker = walk.walk("./data", { 'followLinks' : false });
 
@@ -126,48 +170,10 @@ function start () {
 		fs.realpath(path.join(root, fileStats.name), function (err, resolvedPath) {
 			if (err) return;
 
-			fs.readFile(resolvedPath, function (err, data) {
-				metaflac.vorbisComment(resolvedPath, function (err, tags) {
-					if (err) { next(); return; }
+			if (path.extname(resolvedPath) === '.flac') {
+				handleFLAC(resolvedPath, next);
+			}
 
-					mb.lookupDiscId(tags['MUSICBRAINZ_DISCID'], [], function (err, disc) {
-						if (err) { console.log(err); next(); return; }
-
-						if (typeof trackQueue[disc.id] === 'undefined') {
-							trackQueue[disc.id] = { 'releases' : {}, 'callbacks' : [], 'complete' : false, 'activated' : false, 'release' : null };
-						}
-
-						tagTrack(disc.id, function (releaseId) {
-							console.log(tags['MUSICBRAINZ_DISCID'], tags['TRACKNUMBER'], releaseId);
-							console.log(resolvedPath);
-						});
-
-						var counter = disc.releases.length;
-						for (var i = 0; i < disc.releases.length; i++) {
-							(function(_i) {
-								var release = disc.releases[_i];
-								release.load(['release-groups', 'recordings', 'mediums', 'labels'], function () {
-									if (typeof trackQueue[disc.id].releases[release.id] === 'undefined') {
-										trackQueue[disc.id].releases[release.id]	= release;
-									}
-
-									if (typeof release.releaseGroups[0] === 'undefined') {
-										console.log('no groups:', release.id);
-									}
-
-									if (!--counter) {
-										if (!trackQueue[disc.id].complete) {
-											io.sockets.emit('disc', disc);
-											trackQueue[disc.id].complete = true;
-										}
-									}
-								});
-							})(i);
-						}
-
-					});
-				});
-			});
 			next();
 
 		});
