@@ -131,15 +131,15 @@ function handleFLAC (resolvedPath, next) {
 			}
 
 			tagTrack(disc.id, function (releaseId) {
-				console.log(tags['MUSICBRAINZ_DISCID'], tags['TRACKNUMBER'], releaseId);
-				console.log(resolvedPath);
+				console.log(tags['MUSICBRAINZ_DISCID'], tags['TRACKNUMBER']);
 			});
 
 			var counter = disc.releases.length;
 			for (var i = 0; i < disc.releases.length; i++) {
 				(function(_i) {
 					var release = disc.releases[_i];
-					release.load(['release-groups', 'recordings', 'mediums', 'labels'], function () {
+					release.load(['release-groups', 'recordings', 'mediums', 'labels', 'artists'], function () {
+						if (release.isComplete()) console.log(release.id, 'COMPLETE');
 						if (typeof trackQueue[disc.id].releases[release.id] === 'undefined') {
 							trackQueue[disc.id].releases[release.id] = release;
 						}
