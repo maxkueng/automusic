@@ -56,7 +56,7 @@ program
 var lookupQueue = {};
 var trackQueue = {};
 
-function tagTrack (discId, callback) {
+function queueTrack (discId, callback) {
 	if (trackQueue[discId].activated && trackQueue[discId].release) {
 		callback(trackQueue[discId].release);
 		return;
@@ -130,7 +130,7 @@ function handleFLAC (resolvedPath, next) {
 				trackQueue[disc.id] = { 'releases' : {}, 'callbacks' : [], 'complete' : false, 'activated' : false, 'release' : null };
 			}
 
-			tagTrack(disc.id, function (releaseId) {
+			queueTrack(disc.id, function (releaseId) {
 				console.log(tags['MUSICBRAINZ_DISCID'], tags['TRACKNUMBER']);
 			});
 
