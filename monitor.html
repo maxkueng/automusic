@@ -91,6 +91,7 @@
 			#inbox .disc .release .tracklist, 
 			#inbox .disc .release .medium, 
 			#inbox .disc .release .labelinfo {
+				padding: 0;
 				margin-right: 10px;
 				background-color: transparent;
 			}
@@ -137,10 +138,26 @@
 				background-color: #64fe2e;
 				color: #1c1c1c;
 			}
+
+			#connection-status {
+				position: fixed;
+				top: 10px;
+				right: 10px;
+				height: 15px;
+				width: 15px;
+				border: 1px solid #1c1c1c;
+			}
+			#connection-status.disconnected {
+				border: 1px solid #fe2e64;
+			}
+			#connection-status.connected {
+				border: 1px solid #64fe2e;
+			}
 		</style>
 	</head>
 
 	<body>
+		<div id="connection-status"></div>
 		<div id="inbox">
 		</div>
 <script type="text/javascript">
@@ -161,8 +178,24 @@ function selectRelease (rel) {
 var releases = {};
 
 $(document).ready(function() {
-	console.log('ready');
+	var connectionStatus = $('#connection-status');
+	connectionStatus.addClass('disconnected');
+
 	var socket = io.connect('http://localhost:8000');
+
+	socket.on('connect', function () {
+		connectionStatus.removeClass('disconnected');
+		connectionStatus.addClass('connected');
+	});
+	socket.on('reconnect', function () {
+		connectionStatus.removeClass('disconnected');
+		connectionStatus.addClass('connected');
+	});
+	socket.on('disconnect', function () {
+		connectionStatus.removeClass('connected');
+		connectionStatus.addClass('disconnected');
+	});
+
 	socket.on('disc', function (data) {
 		for (var i = 0; i < data.releases.length; i++) {
 			var release = data.releases[i];
@@ -207,18 +240,35 @@ $(document).ready(function() {
 
 		var releaseElement = $('#release-' + data.release).removeClass('deselected');
 
+		discElement.find('.release.deselected').slideUp('slow');
+
 		var release = releases[data.release];
 		for (var i = 0; i < release.mediums.length; i++) {
 			var tracklistElement = $('<span class="tracklist"/>');
 			releaseElement.find('.medium.pos' + (i+1)).first().append(tracklistElement);
 
-			for (var ii = 0; ii < release.mediums[i].tracks.length; ii++) {
+			var tracks = release.mediums[i].tracks;
+			for (var ii = 0; ii < tracks.length; ii++) {
 				var trackElement = $('<span class="track selected" />');
+				trackElement.addClass('pos' + tracks[ii].position);
 				trackElement.text(release.mediums[i].tracks[ii].position);
+
+				if (tracks[ii].recording) {
+					trackElement.addClass('recording-' + tracks[ii].recording.id);
+				} 
+
 				tracklistElement.append(trackElement);
 			}
 		}
 
+	});
+
+	socket.on('tracktagged', function (data) {
+		var releaseElement = $('#release-' + data.release);
+		var mediumElement = releaseElement.find('.medium.pos' + data.mediumPosition).first();
+		var trackElement = mediumElement.find(' .track.pos' + data.trackPosition);
+		trackElement.removeClass('selected');
+		trackElement.addClass('completed');
 	});
 
 });
