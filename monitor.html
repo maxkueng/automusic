@@ -178,6 +178,11 @@ function selectRelease (rel) {
 var releases = {};
 
 $(document).ready(function() {
+
+	function escapeId(str) {
+		return str.replace('/[^a-z0-9-]/ig', '-');
+	}
+
 	var connectionStatus = $('#connection-status');
 	connectionStatus.addClass('disconnected');
 
@@ -216,8 +221,7 @@ $(document).ready(function() {
 				var releaseId = rel.find('.id:first').text();
 
 				if (rel.hasClass('selected')) {
-					activateRelease(rel);
-
+//					activateRelease(rel);
 					socket.emit('releaseactivated', { 'discid' : discId, 'release' : releaseId });
 
 				} else {
@@ -233,14 +237,12 @@ $(document).ready(function() {
 	});
 
 	socket.on('releaseactivated', function (data) {
-		activateRelease($('#release-' + data.release));
-
-		var discElement = $('#disc-' + data.discid);
-		discElement.find('.release').addClass('deselected');
+		activateRelease($('#release-' + escapeId(data.release)));
 
 		var releaseElement = $('#release-' + data.release).removeClass('deselected');
-
-		discElement.find('.release.deselected').slideUp('slow');
+		var otherReleaseElements = releaseElement.siblings('.release');
+		otherReleaseElements.addClass('deselected');
+		otherReleaseElements.slideUp('slow');
 
 		var release = releases[data.release];
 		for (var i = 0; i < release.mediums.length; i++) {
@@ -254,7 +256,7 @@ $(document).ready(function() {
 				trackElement.text(release.mediums[i].tracks[ii].position);
 
 				if (tracks[ii].recording) {
-					trackElement.addClass('recording-' + tracks[ii].recording.id);
+					trackElement.addClass('recording-' + escapeId(tracks[ii].recording.id));
 				} 
 
 				tracklistElement.append(trackElement);
