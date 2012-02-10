@@ -30,8 +30,9 @@ function handler (req, res) {
 io.sockets.on('connection', function (socket) {
 	socket.on('releaseactivated', function (data) {
 		io.sockets.emit('releaseactivated', data);
-		flacTagQueue.data(data.discid).release = data.release;
-		flacTagQueue.ready(data.discid, true);
+		console.log(data);
+		flacTagQueue.data(data.discId).release = data.release;
+		flacTagQueue.ready(data.discId, true);
 	});
 
 	socket.on('releaseselected', function (data) {
@@ -88,20 +89,53 @@ mb.lookupCache = function (uri, callback, lookup) {
 };
 
 function tagFLAC (discId, trackNumber, releaseId, filePath) {
+	console.log('tagFLAC', discId, trackNumber, releaseId);
 	var release = new mb.Release(releaseId);
 	release.load(['release-groups', 'recordings', 'mediums', 'labels', 'artists', 'discids'], function (error) {
 		var medium = release.getMediumByDiscId(discId);
 		if (medium) {
 			var track = medium.getTrackByPosition(trackNumber);
 			if (track) {
-				console.log(discId, medium.position, track.position, track.recording.id);
-				
-				io.sockets.emit('tracktagged', {
-					'release' : release.id, 
-					'mediumPosition' : medium.position, 
-					'trackPosition' : track.position, 
-					'recording' : track.recording.id
+				var recording = track.recording;
+				recording.load(['artists'], function (err) {
+					metaflac.showMD5sum([], filePath, function (err, md5sum) {
+
+						var vorbisComment = [
+							[ 'MUSICBRAINZ_DISCID', discId ], 
+							[ 'MUSICBRAINZ_RELEASEGROUPID', release.releaseGroups[0].id ], 
+							[ 'MUSICBRAINZ_ALBUMID', release.id ], 
+							[ 'MUSICBRAINZ_ALBUMARTISTID', release.artist.id ], 
+							[ 'MUSICBRAINZ_TRACKID', recording.id ], 
+							[ 'MUSICBRAINZ_ARTISTID', recording.artist.id ], 
+							[ 'TRACKNUMBER', track.position ], 
+						];
+
+						var tmpVCFilename = md5sum + '.vorbisComment';
+						var tmpVCWrite = fs.createWriteStream(tmpVCFilename, { 'flags' : 'w' });
+
+						tmpVCWrite.on('close', function () {
+							metaflac.removeAllTags([], filePath, function (err) {
+								metaflac.importTagsFrom([], filePath, tmpVCFilename, function (err) {
+									io.sockets.emit('tracktagged', {
+										'release' : release.id, 
+										'mediumPosition' : medium.position, 
+										'trackPosition' : track.position, 
+										'recording' : track.recording.id
+									});
+								});
+							});
+
+						});
+
+						for (var i = 0; i < vorbisComment.length; i++) {
+							if (vorbisComment[i][1]) {
+								tmpVCWrite.write(vorbisComment[i][0] + '=' + vorbisComment[i][1] + '\n');
+							}
+						}
+						tmpVCWrite.destroySoon();
+					});
 				});
+				
 			}
 		}
 	});
@@ -110,15 +144,18 @@ function tagFLAC (discId, trackNumber, releaseId, filePath) {
 function handleFLAC (resolvedPath) {
 	metaflac.vorbisComment(resolvedPath, function (err, tags) {
 		if (err) { console.log(resolvedPath, err); return; }
+		if (!tags['MUSICBRAINZ_DISCID']) return;
 
 		mb.lookupDiscId(tags['MUSICBRAINZ_DISCID'], [], function (err, disc) {
-			if (err) { console.log(resolvedPath, err.data()); return; }
+//			if (err) { console.log(resolvedPath, err.data()); return; }
+			if (err) { return; }
 
 			flacTagQueue.add(disc.id, true, function (data) {
 				var discId = tags['MUSICBRAINZ_DISCID'];
 				var trackNumber = tags['TRACKNUMBER'];
 				var filePath = resolvedPath;
 				var releaseId = data.release;
+
 				tagFLAC(discId, trackNumber, releaseId, filePath);
 			});
 
@@ -129,11 +166,13 @@ function handleFLAC (resolvedPath) {
 					release.load(['release-groups', 'recordings', 'mediums', 'labels', 'artists'], function () {
 						if (!--counter) {
 							if (!flacTagQueue.data(disc.id, 'releasesCompleted')) {
-								io.sockets.emit('disc', disc);
+								for (var ii = 0; ii < disc.releases.length; ii++) {
+									io.sockets.emit('release', { 'discId' : disc.id, 'release' : disc.releases[ii] });
+								}
 								flacTagQueue.data(disc.id).releasesCompleted = true;
 
 								if (disc.releases.length == 1 && release.isComplete()) {
-									io.sockets.emit('releaseactivated', { 'discid' : disc.id, 'release' : release.id });
+									io.sockets.emit('releaseactivated', { 'discId' : disc.id, 'release' : release.id });
 									flacTagQueue.data(disc.id).release = release.id;
 									flacTagQueue.ready(disc.id, true);
 								}

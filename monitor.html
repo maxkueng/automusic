@@ -7,15 +7,9 @@
 		<script type="text/javascript" src="/socket.io/socket.io.js"></script>
 		<script type="text/javascript" src="https://raw.github.com/andyet/ICanHaz.js/master/ICanHaz.min.js"></script>  
 		<script id="tdisc" type="text/html">
-			<div class="disc" id="disc-{{id}}">
-				<p class="id">{{id}}</p>
+			<div class="disc disc-{{id}}" id="disc-{{id}}">
+				<p class="id"><span>{{id}}</span></p>
 				<div class="releases">
-				{{#releases}}
-					{{> trelease}}
-				{{/releases}}
-				{{^releases}}
-					<div><span class="warn">NO RELEASES FOUND</span><div>
-				{{/releases}}
 				</div>
 			</div>
 		</script>
@@ -79,6 +73,11 @@
 			#inbox .disc p.id {
 				color: #fe2e64;
 			}
+
+			#inbox .disc p.id span {
+				margin-right: 10px;
+			}
+
 			#inbox .disc .warn {
 				color: #000 !important;
 				background-color: #fe2e64 !important;
@@ -201,35 +200,51 @@ $(document).ready(function() {
 		connectionStatus.addClass('disconnected');
 	});
 
-	socket.on('disc', function (data) {
-		for (var i = 0; i < data.releases.length; i++) {
-			var release = data.releases[i];
-			releases[release.id] = release;
+	socket.on('release', function (data) {
+		releases[data.release.id] = data.release;
+
+		if ($('#release-' + data.release.id)[0]) {
+			var release = $('#release-' + escapeId(data.release.id));
+			var disc = release.parents('.disc:first');
+			disc.find('.id:first').append('<span>' + data.discId + '</span>');
+			disc.addClass('disc-' + escapeId(data.discId));
+
+			return;
 		}
 
-		var disc = ich.tdisc(data);
-		$('#inbox').append(disc);
+		var disc = $('.disc.disc-' + escapeId(data.discId));
 
-		$(disc).find('.release').each(function (index, element) {
-			$(element).off('click');
-			$(element).on('click', function () {
-				var rel = $(this);
-				if (rel.hasClass('activated')) return;
+		if (!disc[0]) {
+			disc = ich.tdisc({ 'id' : escapeId(data.discId) });
+			$('#inbox').append(disc);
+		}
 
-				var disc = rel.parents('.disc:first');
-				var discId = disc.find('.id:first').text();
-				var releaseId = rel.find('.id:first').text();
+		var releaseList = disc.find('.releases:first');
+		var release = ich.trelease(data.release);
+		
+		release.off('click');
+		release.on('click', function (event) {
+			var rel = $(this);
 
-				if (rel.hasClass('selected')) {
-//					activateRelease(rel);
-					socket.emit('releaseactivated', { 'discid' : discId, 'release' : releaseId });
+			if (rel.hasClass('activated')) return;
 
-				} else {
-					selectRelease(rel);
-					socket.emit('releaseselected', { 'discid' : discId, 'release' : releaseId });
-				}
-			});
+			var disc = rel.parents('.disc:first');
+			var discIds = disc.find('.id:first span');
+			var releaseId = rel.find('.id:first').text();
+
+			if (rel.hasClass('selected')) {
+				discIds.each (function (index, el) {
+					socket.emit('releaseactivated', { 'discId' : $(el).text(), 'release' : releaseId });
+				});
+
+			} else {
+				discIds.each (function (index, el) {
+					socket.emit('releaseselected', { 'discId' : $(el).text(), 'release' : releaseId });
+				});
+			}
 		});
+
+		releaseList.append(release);
 	});
 
 	socket.on('releaseselected', function (data) {
@@ -237,7 +252,9 @@ $(document).ready(function() {
 	});
 
 	socket.on('releaseactivated', function (data) {
-		activateRelease($('#release-' + escapeId(data.release)));
+		if ($('#release-' + data.release).hasClass('activated')) return;
+
+		activateRelease($('#release-' + data.release));
 
 		var releaseElement = $('#release-' + data.release).removeClass('deselected');
 		var otherReleaseElements = releaseElement.siblings('.release');
