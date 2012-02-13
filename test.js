@@ -7,6 +7,7 @@ var redis = require('redis');
 var program = require('commander');
 var timers = require('timers');
 var ReadyList = require('./lib/readylist').ReadyList;
+var Trickle = require('trickle').Trickle;
 
 var app = require('http').createServer(handler);
 var io = require('socket.io').listen(app);
@@ -29,8 +30,9 @@ function handler (req, res) {
 
 io.sockets.on('connection', function (socket) {
 	socket.on('releaseactivated', function (data) {
+		if (!flacTagQueue.exists(data.discId)) return;
+
 		io.sockets.emit('releaseactivated', data);
-		console.log(data);
 		flacTagQueue.data(data.discId).release = data.release;
 		flacTagQueue.ready(data.discId, true);
 	});
@@ -54,11 +56,9 @@ var flacTagQueue = new ReadyList();
 mb.lookupCache = function (uri, callback, lookup) {
 	var key = 'lookup:' + uri;
 
-	lookupQueue.add(key, true, function (data) {
-		callback(data.error, data.resource);
-	});
+	if (!lookupQueue.exists(key)) {
+		lookupQueue.createList(key);
 
-	if (!lookupQueue.isReady(key)) {
 		var r = redis.createClient();
 		r.on('connect', function () {
 			r.get(key, function (err, reply) {
@@ -86,31 +86,47 @@ mb.lookupCache = function (uri, callback, lookup) {
 			});
 		});
 	}
+
+	lookupQueue.add(key, true, function (data) {
+		callback(data.error, data.resource);
+	});
 };
 
 function tagFLAC (discId, trackNumber, releaseId, filePath) {
-	console.log('tagFLAC', discId, trackNumber, releaseId);
 	var release = new mb.Release(releaseId);
-	release.load(['release-groups', 'recordings', 'mediums', 'labels', 'artists', 'discids'], function (error) {
+	release.load(['release-groups', 'recordings', 'mediums', 'labels', 'artists', 'discids'], function (err) {
+		if (err) return;
+
 		var medium = release.getMediumByDiscId(discId);
 		if (medium) {
 			var track = medium.getTrackByPosition(trackNumber);
 			if (track) {
 				var recording = track.recording;
-				recording.load(['artists'], function (err) {
+				recording.load(['artists', 'work-rels'], function (err) {
+					if (err) return;
+
 					metaflac.showMD5sum([], filePath, function (err, md5sum) {
+						var vorbisComment = [];
+							vorbisComment.push([ 'MUSICBRAINZ_DISCID', discId ]);
+							vorbisComment.push([ 'MUSICBRAINZ_RELEASEGROUPID', release.releaseGroups[0].id ]);
+							vorbisComment.push([ 'MUSICBRAINZ_ALBUMID', release.id ]);
+							vorbisComment.push([ 'MUSICBRAINZ_ALBUMARTISTID', release.artist.id ]);
+							vorbisComment.push([ 'MUSICBRAINZ_TRACKID', recording.id ]);
+							vorbisComment.push([ 'MUSICBRAINZ_ARTISTID', recording.artist.id ]);
+							//vorbisComment.push([ 'MUSICBRAINZ_WORKID', recording.work.id ]);
+							if (release.labelInfo[0] && release.labelInfo[0].label) {
+								vorbisComment.push([ 'MUSICBRAINZ_LABELID', release.labelInfo[0].label.id ]);
+							}
+							var performanceRel = recording.getWorkRelByType('performance');
+							if (performanceRel && performanceRel.work) {
+								vorbisComment.push([ 'MUSICBRAINZ_WORKID', performanceRel.work.id ]);
+							}
+							vorbisComment.push([ 'TRACKTOTAL', medium.tracks.length ]);
+							vorbisComment.push([ 'TOTALTRACKS', medium.tracks.length ]);
+							vorbisComment.push([ 'TRACKNUMBER', track.position ]);
 
-						var vorbisComment = [
-							[ 'MUSICBRAINZ_DISCID', discId ], 
-							[ 'MUSICBRAINZ_RELEASEGROUPID', release.releaseGroups[0].id ], 
-							[ 'MUSICBRAINZ_ALBUMID', release.id ], 
-							[ 'MUSICBRAINZ_ALBUMARTISTID', release.artist.id ], 
-							[ 'MUSICBRAINZ_TRACKID', recording.id ], 
-							[ 'MUSICBRAINZ_ARTISTID', recording.artist.id ], 
-							[ 'TRACKNUMBER', track.position ], 
-						];
 
-						var tmpVCFilename = md5sum + '.vorbisComment';
+						var tmpVCFilename = '/tmp/' + md5sum + '.vorbisComment';
 						var tmpVCWrite = fs.createWriteStream(tmpVCFilename, { 'flags' : 'w' });
 
 						tmpVCWrite.on('close', function () {
@@ -144,11 +160,10 @@ function tagFLAC (discId, trackNumber, releaseId, filePath) {
 function handleFLAC (resolvedPath) {
 	metaflac.vorbisComment(resolvedPath, function (err, tags) {
 		if (err) { console.log(resolvedPath, err); return; }
-		if (!tags['MUSICBRAINZ_DISCID']) return;
 
 		mb.lookupDiscId(tags['MUSICBRAINZ_DISCID'], [], function (err, disc) {
-//			if (err) { console.log(resolvedPath, err.data()); return; }
-			if (err) { return; }
+			if (!tags['MUSICBRAINZ_DISCID']) return;
+			if (err) { console.log(resolvedPath, err.data()); return; }
 
 			flacTagQueue.add(disc.id, true, function (data) {
 				var discId = tags['MUSICBRAINZ_DISCID'];
@@ -162,6 +177,7 @@ function handleFLAC (resolvedPath) {
 			var counter = disc.releases.length;
 			for (var i = 0; i < disc.releases.length; i++) {
 				(function(_i) {
+					// NOTE: Something wrong here with the counter and _i
 					var release = disc.releases[_i];
 					release.load(['release-groups', 'recordings', 'mediums', 'labels', 'artists'], function () {
 						if (!--counter) {
@@ -187,10 +203,15 @@ function handleFLAC (resolvedPath) {
 
 }
 
+var t = new Trickle(10, 1000);
+
 function start () {
-	walker = walk.walk("./data", { 'followLinks' : false });
+	walker = walk.walk('./data', { 'followLinks' : false });
+	//walker = walk.walk('/media/DATA/audio/flac', { 'followLinks' : false });
 
 	walker.on("file", function (root, fileStats, next) {
+		
+	t.trickle(1, function (err) {
 		fs.realpath(path.join(root, fileStats.name), function (err, resolvedPath) {
 			if (err) return;
 
@@ -198,9 +219,11 @@ function start () {
 				handleFLAC(resolvedPath);
 			}
 
-			next();
 
 		});
+
+		next();
+	});
 	});
 
 	walker.on('end', function () {
@@ -208,7 +231,7 @@ function start () {
 	});
 }
 
-
+console.log('PID ' + process.pid);
 program.prompt('start?: ', function(y){
 	if (y === 'y') start();
 });

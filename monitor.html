@@ -7,7 +7,7 @@
 		<script type="text/javascript" src="/socket.io/socket.io.js"></script>
 		<script type="text/javascript" src="https://raw.github.com/andyet/ICanHaz.js/master/ICanHaz.min.js"></script>  
 		<script id="tdisc" type="text/html">
-			<div class="disc disc-{{id}}" id="disc-{{id}}">
+			<div class="disc disc-{{escapedId}}" id="disc-{{escapedId}}">
 				<p class="id"><span>{{id}}</span></p>
 				<div class="releases">
 				</div>
@@ -40,8 +40,8 @@
 					<div class="mediums">
 					{{#mediums}}
 						<div class="medium pos{{position}}">
-							{{#title}} <span class="title">{{title}}</span> {{/title}}
 							<span class="position">{{position}}</span>
+							{{#title}} <span class="title">{{title}}</span> {{/title}}
 							<span class="format">{{format}}</span>
 							<span class="tracks">{{tracks.length}} tracks</span>
 						</div>
@@ -179,7 +179,7 @@ var releases = {};
 $(document).ready(function() {
 
 	function escapeId(str) {
-		return str.replace('/[^a-z0-9-]/ig', '-');
+		return str.replace(/[^a-z0-9-]/ig, '-');
 	}
 
 	var connectionStatus = $('#connection-status');
@@ -204,7 +204,7 @@ $(document).ready(function() {
 		releases[data.release.id] = data.release;
 
 		if ($('#release-' + data.release.id)[0]) {
-			var release = $('#release-' + escapeId(data.release.id));
+			var release = $('#release-' + data.release.id);
 			var disc = release.parents('.disc:first');
 			disc.find('.id:first').append('<span>' + data.discId + '</span>');
 			disc.addClass('disc-' + escapeId(data.discId));
@@ -215,7 +215,7 @@ $(document).ready(function() {
 		var disc = $('.disc.disc-' + escapeId(data.discId));
 
 		if (!disc[0]) {
-			disc = ich.tdisc({ 'id' : escapeId(data.discId) });
+			disc = ich.tdisc({ 'escapedId' : escapeId(data.discId), 'id' : data.discId });
 			$('#inbox').append(disc);
 		}
 
@@ -273,7 +273,7 @@ $(document).ready(function() {
 				trackElement.text(release.mediums[i].tracks[ii].position);
 
 				if (tracks[ii].recording) {
-					trackElement.addClass('recording-' + escapeId(tracks[ii].recording.id));
+					trackElement.addClass('recording-' + tracks[ii].recording.id);
 				} 
 
 				tracklistElement.append(trackElement);
