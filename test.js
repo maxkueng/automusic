@@ -179,7 +179,7 @@ function handleFLAC (resolvedPath) {
 				(function(_i) {
 					// NOTE: Something wrong here with the counter and _i
 					var release = disc.releases[_i];
-					release.load(['release-groups', 'recordings', 'mediums', 'labels', 'artists'], function () {
+					release.load(['release-groups', 'recordings', 'mediums', 'labels', 'artists', 'discids'], function () {
 						if (!--counter) {
 							if (!flacTagQueue.data(disc.id, 'releasesCompleted')) {
 								for (var ii = 0; ii < disc.releases.length; ii++) {

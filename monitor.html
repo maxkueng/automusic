@@ -39,7 +39,8 @@
 
 					<div class="mediums">
 					{{#mediums}}
-						<div class="medium pos{{position}}">
+							<div class="medium pos{{position}}">
+							<span class="discid"></span>
 							<span class="position">{{position}}</span>
 							{{#title}} <span class="title">{{title}}</span> {{/title}}
 							<span class="format">{{format}}</span>
@@ -92,6 +93,10 @@
 			#inbox .disc .release .labelinfo {
 				padding: 0;
 				margin-right: 10px;
+				background-color: transparent;
+			}
+			#inbox .disc .medium .discid {
+				color: #fe2e64;
 				background-color: transparent;
 			}
 			#inbox .disc .release:hover {
@@ -209,6 +214,16 @@ $(document).ready(function() {
 			disc.find('.id:first').append('<span>' + data.discId + '</span>');
 			disc.addClass('disc-' + escapeId(data.discId));
 
+			var pos = 0;
+			for (var i = 0; i < data.release.mediums.length; i++) {
+				for (var ii = 0; ii < data.release.mediums[i].discs.length; ii++) {
+					if (data.release.mediums[i].discs[ii].id == data.discId) {
+						pos = data.release.mediums[i].position;
+					}
+				}
+			}
+			$('.medium.pos' + pos + ' .discid').text(data.discId.substr(0, 5));
+
 			return;
 		}
 
@@ -245,6 +260,16 @@ $(document).ready(function() {
 		});
 
 		releaseList.append(release);
+
+		var pos = 0;
+		for (var i = 0; i < data.release.mediums.length; i++) {
+			for (var ii = 0; ii < data.release.mediums[i].discs.length; ii++) {
+				if (data.release.mediums[i].discs[ii].id == data.discId) {
+					pos = data.release.mediums[i].position;
+				}
+			}
+		}
+		release.find('.medium.pos' + pos + ' .discid').text(data.discId.substr(0, 5));
 	});
 
 	socket.on('releaseselected', function (data) {
