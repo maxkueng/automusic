@@ -1,5 +1,7 @@
+Release Title                    ALBUM
 Track Title                      TITLE
 Artist                           ARTIST
+Release Artist                   ALBUMARTIST
 Release Date                     DATE
 Original Release Date            ORIGINALDATE
 Composer                         COMPOSER
@@ -15,6 +17,10 @@ Mix engineer                     MIXER
 Grouping [1]                     GROUPING
 Subtitle[1]                      SUBTITLE
 Disc Subtitle                    DISCSUBTITLE
+Track Number                     TRACKNUMBER
+Total Tracks                     TRACKTOTAL and TOTALTRACKS
+Disc Number                      DISCNUMBER
+Total Discs                      DISCTOTAL and TOTALDISCS
 Compilation                      COMPILATION
 Comment[1]                       COMMENT
 Genre                            GENRE
@@ -33,6 +39,12 @@ Album Sort Order[1]              ALBUMSORT
 Album Artist Sort Order          ALBUMARTISTSORT
 Artist Sort Order                ARTISTSORT
 Title Sort Order[1]              TITLESORT
+MusicBrainz Track Id             MUSICBRAINZ_TRACKID
+MusicBrainz Release Id           MUSICBRAINZ_ALBUMID
+MusicBrainz Artist Id            MUSICBRAINZ_ARTISTID
+MusicBrainz Release Artist Id    MUSICBRAINZ_ALBUMARTISTID
+MusicBrainz TRM Id               MUSICBRAINZ_TRMID
+MusicBrainz Disc Id              MUSICBRAINZ_DISCID
 MusicIP PUID                     MUSICIP_PUID
 MusicIP Fingerprint              FINGERPRINT=MusicMagic Fingerprint {fingerprint}
 Release Status                   MUSICBRAINZ_ALBUMSTATUS
@@ -41,4 +53,6 @@ Release Country                  RELEASECOUNTRY
 ASIN                             ASIN
 Script                           SCRIPT
 Language                         LANGUAGE
+MusicBrainz Release Group Id     MUSICBRAINZ_RELEASEGROUPID
+MusicBrainz Work Id              MUSICBRAINZ_WORKID
 License                          LICENSE
