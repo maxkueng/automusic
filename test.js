@@ -1,6 +1,4 @@
-var fs = require('fs');
-var path = require('path');
-var walk = require('walk');
+var fs = require('fs'); var path = require('path'); var walk = require('walk');
 var mb = require('musicbrainz');
 var metaflac = require('metaflac');
 var redis = require('redis');
@@ -126,13 +124,38 @@ function tagFLAC (discId, trackNumber, releaseId, filePath) {
 							vorbisComment.push([ 'TOTALDISCS', release.mediums.length ]);
 							vorbisComment.push([ 'DISCNUMBER', medium.position ]);
 
+							vorbisComment.push([ 'ALBUM', release.title ]);
+							vorbisComment.push([ 'ALBUMARTIST', release.artist.name ]);
+							vorbisComment.push([ 'ALBUMARTISTSORT', release.artist.sortName ]);
+							vorbisComment.push([ 'DATE', release.date ]);
+							vorbisComment.push([ 'ORIGINALDATE', release.releaseGroups[0].firstReleaseDate ]);
+							vorbisComment.push([ 'MEDIA', medium.format ]);
+							vorbisComment.push([ 'BARCODE', release.barcode ]);
+							vorbisComment.push([ 'ASIN', release.asin ]);
+							vorbisComment.push([ 'RELEASECOUNTRY', release.country ]);
+							vorbisComment.push([ 'SCRIPT', release.script ]);
+							vorbisComment.push([ 'LANGUAGE', release.language ]);
+							vorbisComment.push([ 'MUSICBRAINZ_ALBUMSTATUS', release.status ]);
+							vorbisComment.push([ 'ALBUMSTATUS', release.status ]);
+							vorbisComment.push([ 'MUSICBRAINZ_ALBUMTYPE', release.releaseGroups[0].type ]);
+							vorbisComment.push([ 'ALBUMTYPE', release.releaseGroups[0].type ]);
+
+							if (release.labelInfo[0] && release.labelInfo[0].label) {
+								vorbisComment.push([ 'LABEL', release.labelInfo[0].label.name ]);
+								vorbisComment.push([ 'LABELSORT', release.labelInfo[0].label.sortName ]);
+							}
+
+							if (release.labelInfo[0]) {
+								vorbisComment.push([ 'CATALOGNUMBER', release.labelInfo[0].catalogNumber ]);
+							}
+
 							vorbisComment.push([ 'TRACKTOTAL', medium.tracks.length ]);
 							vorbisComment.push([ 'TOTALTRACKS', medium.tracks.length ]);
 							vorbisComment.push([ 'TRACKNUMBER', track.position ]);
 
-							vorbisComment.push([ 'ALBUM', release.title ]);
-							vorbisComment.push([ 'ALBUMARTIST', release.artist.name ]);
-							vorbisComment.push([ 'ALBUMARTISTSORT', release.artist.sortName ]);
+							vorbisComment.push([ 'TITLE', recording.title ]);
+							vorbisComment.push([ 'ARTIST', recording.artist.name ]);
+							vorbisComment.push([ 'ARTISTSORT', recording.artist.sortName ]);
 
 
 						var tmpVCFilename = '/tmp/' + md5sum + '.vorbisComment';
