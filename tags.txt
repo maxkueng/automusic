@@ -1,6 +1,3 @@
-Track Title                      TITLE
-Artist                           ARTIST
-Release Date                     DATE
 Original Release Date            ORIGINALDATE
 Composer                         COMPOSER
 Lyricist                         LYRICIST
@@ -24,21 +21,11 @@ Mood[1]                          MOOD
 ISRC                             ISRC
 Copyright[1]                     COPYRIGHT
 Lyrics[1]                        LYRICS
-Release Format                   MEDIA
-Label Name                       LABEL
 Release Catalog Number           CATALOGNUMBER
-Barcode                          BARCODE
 Encoded By[1]                    ENCODEDBY
 Album Sort Order[1]              ALBUMSORT
-Album Artist Sort Order          ALBUMARTISTSORT
-Artist Sort Order                ARTISTSORT
 Title Sort Order[1]              TITLESORT
 MusicIP PUID                     MUSICIP_PUID
 MusicIP Fingerprint              FINGERPRINT=MusicMagic Fingerprint {fingerprint}
-Release Status                   MUSICBRAINZ_ALBUMSTATUS
 Release Type                     MUSICBRAINZ_ALBUMTYPE
-Release Country                  RELEASECOUNTRY
-ASIN                             ASIN
-Script                           SCRIPT
-Language                         LANGUAGE
 License                          LICENSE
