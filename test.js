@@ -121,9 +121,18 @@ function tagFLAC (discId, trackNumber, releaseId, filePath) {
 							if (performanceRel && performanceRel.work) {
 								vorbisComment.push([ 'MUSICBRAINZ_WORKID', performanceRel.work.id ]);
 							}
+
+							vorbisComment.push([ 'DISCTOTAL', release.mediums.length ]);
+							vorbisComment.push([ 'TOTALDISCS', release.mediums.length ]);
+							vorbisComment.push([ 'DISCNUMBER', medium.position ]);
+
 							vorbisComment.push([ 'TRACKTOTAL', medium.tracks.length ]);
 							vorbisComment.push([ 'TOTALTRACKS', medium.tracks.length ]);
 							vorbisComment.push([ 'TRACKNUMBER', track.position ]);
+
+							vorbisComment.push([ 'ALBUM', release.title ]);
+							vorbisComment.push([ 'ALBUMARTIST', release.artist.name ]);
+							vorbisComment.push([ 'ALBUMARTISTSORT', release.artist.sortName ]);
 
 
 						var tmpVCFilename = '/tmp/' + md5sum + '.vorbisComment';
