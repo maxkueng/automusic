@@ -1,7 +1,5 @@
-Release Title                    ALBUM
 Track Title                      TITLE
 Artist                           ARTIST
-Release Artist                   ALBUMARTIST
 Release Date                     DATE
 Original Release Date            ORIGINALDATE
 Composer                         COMPOSER
