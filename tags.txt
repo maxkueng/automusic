@@ -1,4 +1,3 @@
-Original Release Date            ORIGINALDATE
 Composer                         COMPOSER
 Lyricist                         LYRICIST
 Conductor                        CONDUCTOR
@@ -21,11 +20,9 @@ Mood[1]                          MOOD
 ISRC                             ISRC
 Copyright[1]                     COPYRIGHT
 Lyrics[1]                        LYRICS
-Release Catalog Number           CATALOGNUMBER
 Encoded By[1]                    ENCODEDBY
 Album Sort Order[1]              ALBUMSORT
 Title Sort Order[1]              TITLESORT
 MusicIP PUID                     MUSICIP_PUID
 MusicIP Fingerprint              FINGERPRINT=MusicMagic Fingerprint {fingerprint}
-Release Type                     MUSICBRAINZ_ALBUMTYPE
 License                          LICENSE

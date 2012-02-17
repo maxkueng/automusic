@@ -108,9 +108,9 @@ function tagFLAC (discId, trackNumber, releaseId, filePath) {
 							vorbisComment.push([ 'MUSICBRAINZ_DISCID', discId ]);
 							vorbisComment.push([ 'MUSICBRAINZ_RELEASEGROUPID', release.releaseGroups[0].id ]);
 							vorbisComment.push([ 'MUSICBRAINZ_ALBUMID', release.id ]);
-							vorbisComment.push([ 'MUSICBRAINZ_ALBUMARTISTID', release.artist.id ]);
+							vorbisComment.push([ 'MUSICBRAINZ_ALBUMARTISTID', release.artistCredits[0].artist.id ]);
 							vorbisComment.push([ 'MUSICBRAINZ_TRACKID', recording.id ]);
-							vorbisComment.push([ 'MUSICBRAINZ_ARTISTID', recording.artist.id ]);
+							vorbisComment.push([ 'MUSICBRAINZ_ARTISTID', recording.artistCredits[0].artist.id ]);
 							//vorbisComment.push([ 'MUSICBRAINZ_WORKID', recording.work.id ]);
 							if (release.labelInfo[0] && release.labelInfo[0].label) {
 								vorbisComment.push([ 'MUSICBRAINZ_LABELID', release.labelInfo[0].label.id ]);
@@ -125,8 +125,8 @@ function tagFLAC (discId, trackNumber, releaseId, filePath) {
 							vorbisComment.push([ 'DISCNUMBER', medium.position ]);
 
 							vorbisComment.push([ 'ALBUM', release.title ]);
-							vorbisComment.push([ 'ALBUMARTIST', release.artist.name ]);
-							vorbisComment.push([ 'ALBUMARTISTSORT', release.artist.sortName ]);
+							vorbisComment.push([ 'ALBUMARTIST', release.artistCredits[0].artist.name ]);
+							vorbisComment.push([ 'ALBUMARTISTSORT', release.artistCredits[0].artist.sortName ]);
 							vorbisComment.push([ 'DATE', release.date ]);
 							vorbisComment.push([ 'ORIGINALDATE', release.releaseGroups[0].firstReleaseDate ]);
 							vorbisComment.push([ 'MEDIA', medium.format ]);
@@ -154,8 +154,8 @@ function tagFLAC (discId, trackNumber, releaseId, filePath) {
 							vorbisComment.push([ 'TRACKNUMBER', track.position ]);
 
 							vorbisComment.push([ 'TITLE', recording.title ]);
-							vorbisComment.push([ 'ARTIST', recording.artist.name ]);
-							vorbisComment.push([ 'ARTISTSORT', recording.artist.sortName ]);
+							vorbisComment.push([ 'ARTIST', recording.artistCreditsString ]);
+							vorbisComment.push([ 'ARTISTSORT', recording.artistCreditsSortString() ]);
 
 
 						var tmpVCFilename = '/tmp/' + md5sum + '.vorbisComment';
