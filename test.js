@@ -11,7 +11,7 @@ var app = require('http').createServer(handler);
 var io = require('socket.io').listen(app);
 
 io.set('log level', 1);
-app.listen(8000);
+app.listen(8080);
 
 function handler (req, res) {
 	fs.readFile(__dirname + '/monitor.html',
@@ -91,6 +91,10 @@ mb.lookupCache = function (uri, callback, lookup) {
 };
 
 function tagFLAC (discId, trackNumber, releaseId, filePath) {
+	if (!discId) throw 'Missing DiscId';
+	if (!trackNumber) throw 'Missing Track number';
+	if (!releaseId) throw 'Missing ReleaseId';
+
 	var release = new mb.Release(releaseId);
 	release.load(['release-groups', 'recordings', 'mediums', 'labels', 'artists', 'discids'], function (err) {
 		if (err) return;
@@ -125,8 +129,8 @@ function tagFLAC (discId, trackNumber, releaseId, filePath) {
 							vorbisComment.push([ 'DISCNUMBER', medium.position ]);
 
 							vorbisComment.push([ 'ALBUM', release.title ]);
-							vorbisComment.push([ 'ALBUMARTIST', release.artistCredits[0].artist.name ]);
-							vorbisComment.push([ 'ALBUMARTISTSORT', release.artistCredits[0].artist.sortName ]);
+							vorbisComment.push([ 'ALBUMARTIST', release.artistCreditsString() ]);
+							vorbisComment.push([ 'ALBUMARTISTSORT', release.artistCreditsSortString() ]);
 							vorbisComment.push([ 'DATE', release.date ]);
 							vorbisComment.push([ 'ORIGINALDATE', release.releaseGroups[0].firstReleaseDate ]);
 							vorbisComment.push([ 'MEDIA', medium.format ]);
@@ -135,10 +139,8 @@ function tagFLAC (discId, trackNumber, releaseId, filePath) {
 							vorbisComment.push([ 'RELEASECOUNTRY', release.country ]);
 							vorbisComment.push([ 'SCRIPT', release.script ]);
 							vorbisComment.push([ 'LANGUAGE', release.language ]);
-							vorbisComment.push([ 'MUSICBRAINZ_ALBUMSTATUS', release.status ]);
 							vorbisComment.push([ 'ALBUMSTATUS', release.status ]);
 							vorbisComment.push([ 'MUSICBRAINZ_ALBUMTYPE', release.releaseGroups[0].type ]);
-							vorbisComment.push([ 'ALBUMTYPE', release.releaseGroups[0].type ]);
 
 							if (release.labelInfo[0] && release.labelInfo[0].label) {
 								vorbisComment.push([ 'LABEL', release.labelInfo[0].label.name ]);
@@ -154,7 +156,7 @@ function tagFLAC (discId, trackNumber, releaseId, filePath) {
 							vorbisComment.push([ 'TRACKNUMBER', track.position ]);
 
 							vorbisComment.push([ 'TITLE', recording.title ]);
-							vorbisComment.push([ 'ARTIST', recording.artistCreditsString ]);
+							vorbisComment.push([ 'ARTIST', recording.artistCreditsString() ]);
 							vorbisComment.push([ 'ARTISTSORT', recording.artistCreditsSortString() ]);
 
 
@@ -190,7 +192,7 @@ function tagFLAC (discId, trackNumber, releaseId, filePath) {
 };
 
 function handleFLAC (resolvedPath) {
-	metaflac.vorbisComment(resolvedPath, function (err, tags) {
+	metaflac.vorbisComment(resolvedPath, true, function (err, tags) {
 		if (err) { console.log(resolvedPath, err); return; }
 
 		mb.lookupDiscId(tags['MUSICBRAINZ_DISCID'], [], function (err, disc) {

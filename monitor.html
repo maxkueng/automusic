@@ -190,7 +190,7 @@ $(document).ready(function() {
 	var connectionStatus = $('#connection-status');
 	connectionStatus.addClass('disconnected');
 
-	var socket = io.connect('http://localhost:8000');
+	var socket = io.connect('http://localhost:8080');
 
 	socket.on('connect', function () {
 		connectionStatus.removeClass('disconnected');
@@ -211,8 +211,10 @@ $(document).ready(function() {
 		if ($('#release-' + data.release.id)[0]) {
 			var release = $('#release-' + data.release.id);
 			var disc = release.parents('.disc:first');
-			disc.find('.id:first').append('<span>' + data.discId + '</span>');
-			disc.addClass('disc-' + escapeId(data.discId));
+			if (!disc.hasClass('disc-' + escapeId(data.discId))) {
+				disc.find('.id:first').append('<span>' + data.discId + '</span>');
+				disc.addClass('disc-' + escapeId(data.discId));
+			}
 
 			var pos = 0;
 			for (var i = 0; i < data.release.mediums.length; i++) {
