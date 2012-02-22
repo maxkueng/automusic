@@ -112,12 +112,17 @@ function tagFLAC (discId, trackNumber, releaseId, filePath) {
 							vorbisComment.push([ 'MUSICBRAINZ_DISCID', discId ]);
 							vorbisComment.push([ 'MUSICBRAINZ_RELEASEGROUPID', release.releaseGroups[0].id ]);
 							vorbisComment.push([ 'MUSICBRAINZ_ALBUMID', release.id ]);
-							vorbisComment.push([ 'MUSICBRAINZ_ALBUMARTISTID', release.artistCredits[0].artist.id ]);
+							for (var i = 0; i < release.artistCredits.length; i++) {
+								vorbisComment.push([ 'MUSICBRAINZ_ALBUMARTISTID', release.artistCredits[i].artist.id ]);
+							}
 							vorbisComment.push([ 'MUSICBRAINZ_TRACKID', recording.id ]);
-							vorbisComment.push([ 'MUSICBRAINZ_ARTISTID', recording.artistCredits[0].artist.id ]);
-							//vorbisComment.push([ 'MUSICBRAINZ_WORKID', recording.work.id ]);
-							if (release.labelInfo[0] && release.labelInfo[0].label) {
-								vorbisComment.push([ 'MUSICBRAINZ_LABELID', release.labelInfo[0].label.id ]);
+							for (var i = 0; i < recording.artistCredits.length; i++) {
+								vorbisComment.push([ 'MUSICBRAINZ_ARTISTID', recording.artistCredits[i].artist.id ]);
+							}
+							for (var i = 0; i < release.labelInfo.length; i++) {
+								if (release.labelInfo[0].label) {
+									vorbisComment.push([ 'MUSICBRAINZ_LABELID', release.labelInfo[i].label.id ]);
+								}
 							}
 							var performanceRel = recording.getWorkRelByType('performance');
 							if (performanceRel && performanceRel.work) {
