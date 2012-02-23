@@ -110,20 +110,29 @@ function tagFLAC (discId, trackNumber, releaseId, filePath) {
 					metaflac.showMD5sum([], filePath, function (err, md5sum) {
 						var vorbisComment = [];
 							vorbisComment.push([ 'MUSICBRAINZ_DISCID', discId ]);
-							vorbisComment.push([ 'MUSICBRAINZ_RELEASEGROUPID', release.releaseGroups[0].id ]);
+
+							for (var i = 0; i < release.releaseGroups.length; i++) {
+								vorbisComment.push([ 'MUSICBRAINZ_RELEASEGROUPID', release.releaseGroups[i].id ]);
+							}
+
 							vorbisComment.push([ 'MUSICBRAINZ_ALBUMID', release.id ]);
+
 							for (var i = 0; i < release.artistCredits.length; i++) {
 								vorbisComment.push([ 'MUSICBRAINZ_ALBUMARTISTID', release.artistCredits[i].artist.id ]);
 							}
+
 							vorbisComment.push([ 'MUSICBRAINZ_TRACKID', recording.id ]);
+
 							for (var i = 0; i < recording.artistCredits.length; i++) {
 								vorbisComment.push([ 'MUSICBRAINZ_ARTISTID', recording.artistCredits[i].artist.id ]);
 							}
+
 							for (var i = 0; i < release.labelInfo.length; i++) {
 								if (release.labelInfo[0].label) {
 									vorbisComment.push([ 'MUSICBRAINZ_LABELID', release.labelInfo[i].label.id ]);
 								}
 							}
+
 							var performanceRel = recording.getWorkRelByType('performance');
 							if (performanceRel && performanceRel.work) {
 								vorbisComment.push([ 'MUSICBRAINZ_WORKID', performanceRel.work.id ]);
@@ -147,13 +156,12 @@ function tagFLAC (discId, trackNumber, releaseId, filePath) {
 							vorbisComment.push([ 'ALBUMSTATUS', release.status ]);
 							vorbisComment.push([ 'MUSICBRAINZ_ALBUMTYPE', release.releaseGroups[0].type ]);
 
-							if (release.labelInfo[0] && release.labelInfo[0].label) {
-								vorbisComment.push([ 'LABEL', release.labelInfo[0].label.name ]);
-								vorbisComment.push([ 'LABELSORT', release.labelInfo[0].label.sortName ]);
-							}
-
-							if (release.labelInfo[0]) {
-								vorbisComment.push([ 'CATALOGNUMBER', release.labelInfo[0].catalogNumber ]);
+							for (var i = 0; i < release.labelInfo.length; i++) {
+								if (release.labelInfo[i].label) {
+									vorbisComment.push([ 'LABEL', release.labelInfo[i].label.name ]);
+									vorbisComment.push([ 'LABELSORT', release.labelInfo[i].label.sortName ]);
+								}
+								vorbisComment.push([ 'CATALOGNUMBER', release.labelInfo[i].catalogNumber ]);
 							}
 
 							vorbisComment.push([ 'TRACKTOTAL', medium.tracks.length ]);
