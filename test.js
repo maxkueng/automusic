@@ -104,7 +104,7 @@ function tagFLAC (discId, trackNumber, releaseId, filePath) {
 			var track = medium.getTrackByPosition(trackNumber);
 			if (track) {
 				var recording = track.recording;
-				recording.load(['artists', 'work-rels'], function (err) {
+				recording.load(['artists', 'work-rels', 'artist-rels'], function (err) {
 					if (err) return;
 
 					metaflac.showMD5sum([], filePath, function (err, md5sum) {
@@ -210,6 +210,7 @@ function handleFLAC (resolvedPath) {
 
 		mb.lookupDiscId(tags['MUSICBRAINZ_DISCID'], [], function (err, disc) {
 			if (!tags['MUSICBRAINZ_DISCID']) return;
+		if (err) console.log(tags);
 			if (err) { console.log(resolvedPath, err.data()); return; }
 
 			flacTagQueue.add(disc.id, true, function (data) {
