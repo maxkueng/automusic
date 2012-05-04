@@ -108,6 +108,8 @@ function tagFLAC (discId, trackNumber, releaseId, filePath) {
 					if (err) return;
 
 					metaflac.showMD5sum([], filePath, function (err, md5sum) {
+						console.log(recording.getArtistRelsByType('producer'));
+						console.log(recording.getArtistRelsByType('instrument').length);
 						var vorbisComment = [];
 							vorbisComment.push([ 'MUSICBRAINZ_DISCID', discId ]);
 
