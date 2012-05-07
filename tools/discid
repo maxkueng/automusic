@@ -1,0 +1,11 @@
+#!/usr/bin/perl
+
+use MusicBrainz::DiscID;
+
+my $discid = MusicBrainz::DiscID->new();
+if ( $discid->read() == 0 ) {
+	print STDERR "Error: " . $discid->error_msg() . "\n";
+	exit(1);
+}
+
+print "DiscID: " . $discid->id() . "\n";

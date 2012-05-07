@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Automusic</title>
+		<link rel="stylesheet" type="text/css" href="/stylesheets/base.css" />
+		<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+		<script type="text/javascript" src="/scripts/jquery-1.7.2.min.js"></script>
+	</head>
+
+	<body>
+	<%- body %>
+
+		<script type="text/javascript">
+		var socket = io.connect('http://127.0.0.1:9090');
+
+		socket.on('scanning', function () {
+			console.log('scanning');
+		});
+
+		socket.on('scanningcomplete', function () {
+			console.log('scanning complete');
+		});
+
+		socket.on('queueupdate', function (queue, len) {
+			$('dl dd.' + queue).text(len);
+		});
+		</script>
+	</body>
+
+</html>
