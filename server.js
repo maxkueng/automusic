@@ -1,7 +1,12 @@
 var express = require('express');
 var socketio = require('socket.io');
+var ejs = require('ejs');
 var Automusic = require('./lib/automusic').Automusic;
 var automusic = new Automusic();
+
+ejs.filters.normalize = function (s) {
+	return s.replace(/[^a-z0-9]+/ig, '');
+};
 
 var app = express.createServer(
 	express.static('./public'), 
@@ -21,7 +26,11 @@ automusic.on('scanningcomplete', function () {
 });
 
 automusic.on('disc', function (disc) {
-	console.log(disc.id);
+	io.sockets.emit('disc', disc);
+});
+
+automusic.on('release', function (discId, release) {
+	io.sockets.emit('release', discId, release);
 });
 
 automusic.on('queueupdate', function (queue, len) {
@@ -39,6 +48,18 @@ app.get('/', function (req, res) {
 	res.render('index.ejs', {
 		'req' : req, 
 		'res' : res
+	});
+});
+
+app.get('/disc/:discId', function (req, res) {
+	var discId = req.params['discId'];
+	var disc = automusic.disc(discId);
+
+	res.render('disc.ejs', {
+		'layout' : false, 
+		'req' : req, 
+		'res' : res, 
+		'disc' : disc
 	});
 });
 

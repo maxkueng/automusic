@@ -17,3 +17,37 @@
 
 <div id="errors">
 </div>
+
+<script type="text/javascript">
+(function ($) {
+	var socket = io.connect('http://127.0.0.1:9090');
+
+
+	socket.on('scanning', function () {
+		console.log('scanning');
+	});
+
+	socket.on('scanningcomplete', function () {
+		console.log('scanning complete');
+	});
+
+	socket.on('queueupdate', function (queue, len) {
+		$('dl dd.' + queue).text(len);
+	});
+
+	socket.on('disc', function (disc) { });
+
+	socket.on('release', function (discId, release) {
+		var discEl = $('.disc.disc-' + discId.replace(/[^a-z0-9]+/ig, ''));
+		
+		if (!discEl[0]) {
+			$.ajax({
+				'url' : '/disc/' + discId, 
+				'success' : function (data) {
+					$('#discs').append(data);
+				}
+			});
+		}
+	});
+})(jQuery);
+	</script>
