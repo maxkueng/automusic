@@ -1,3 +1,5 @@
+<div id="connection">&middot;</div>
+<div id="scanning">&middot;</div>
 <div id="queues">
 	<dl>
 		<dt class="disclookup">Disc lookup</dt>
@@ -22,6 +24,7 @@
 (function ($) {
 	var socket = io.connect('http://127.0.0.1:9090');
 
+	
 
 	socket.on('scanning', function () {
 		console.log('scanning');
@@ -44,7 +47,7 @@
 			$.ajax({
 				'url' : '/disc/' + discId, 
 				'success' : function (data) {
-					$('#discs').append(data);
+					$('#discs').append($(data));
 				}
 			});
 		}
