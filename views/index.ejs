@@ -22,16 +22,26 @@
 
 <script type="text/javascript">
 (function ($) {
+	var discQueue = new ReadyList();
+	var releaseQueue = new ReadyList();
 	var socket = io.connect('http://127.0.0.1:9090');
 
-	
+	socket.on('connect', function () {
+		$('#connection').addClass('connected');
+	});
+	socket.on('reconnect', function () {
+		$('#connection').addClass('connected');
+	});
+	socket.on('disconnect', function () {
+		$('#connection').removeClass('connected');
+	});
 
 	socket.on('scanning', function () {
-		console.log('scanning');
+		$('#scanning').addClass('scanning');
 	});
 
 	socket.on('scanningcomplete', function () {
-		console.log('scanning complete');
+		$('#scanning').removeClass('scanning');
 	});
 
 	socket.on('queueupdate', function (queue, len) {
@@ -41,13 +51,25 @@
 	socket.on('disc', function (disc) { });
 
 	socket.on('release', function (discId, release) {
-		var discEl = $('.disc.disc-' + discId.replace(/[^a-z0-9]+/ig, ''));
-		
-		if (!discEl[0]) {
+		discQueue.add(discId, true, function (data) {
+			var releaseId = release.id;
+
+			releaseQueue(releaseId, true, function (data) {
+			});
+
+			if (!releaseQueue.isBusy(releaseId)) {
+				releaseQueue.busy(releaseId, true);
+			}
+		});
+
+		if (!discQueue.isBusy(discId)) {
+			discQueue.busy(discId, true);
+
 			$.ajax({
 				'url' : '/disc/' + discId, 
 				'success' : function (data) {
 					$('#discs').append($(data));
+					discQueue.ready(discId, true);
 				}
 			});
 		}

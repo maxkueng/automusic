@@ -19,10 +19,34 @@ body {
 	color: #fe2e64;
 }
 
-#queues dl {
+#connection.connected {
+	border: 1px solid #64fe2e;
+	color: #64fe2e;
+}
+
+#scanning {
 	position: absolute;
 	top: 10px;
 	right: 35px;
+	height: 18px;
+	width: 18px;
+	line-height: 18px;
+	text-align: center;
+	background-color: #1c1c1c;
+	border: 1px solid #333;
+	border-radius: 3px;
+	color: #fe2e64;
+}
+
+#scanning.scanning {
+	border: 1px solid #64fe2e;
+	color: #64fe2e;
+}
+
+#queues dl {
+	position: absolute;
+	top: 10px;
+	right: 60px;
 }
 
 #queues dl {

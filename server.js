@@ -51,8 +51,8 @@ app.get('/', function (req, res) {
 	});
 });
 
-app.get('/disc/:discId', function (req, res) {
-	var discId = req.params['discId'];
+app.get('/disc/:id', function (req, res) {
+	var discId = req.params['id'];
 	var disc = automusic.disc(discId);
 
 	res.render('disc.ejs', {
@@ -60,6 +60,18 @@ app.get('/disc/:discId', function (req, res) {
 		'req' : req, 
 		'res' : res, 
 		'disc' : disc
+	});
+});
+
+app.get('/release/:id', function (req, res) {
+	var releaseId = req.params['id'];
+	var release = automusic.release(releaseId);
+
+	res.render('release.ejs', {
+		'layout' : false, 
+		'req' : req, 
+		'res' : res, 
+		'release' : release
 	});
 });
 
