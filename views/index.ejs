@@ -26,6 +26,10 @@
 	var releaseQueue = new ReadyList();
 	var socket = io.connect('http://127.0.0.1:9090');
 
+	function normalize (str) {
+		return str.replace(/[^a-z0-9]+/ig, '');
+	}
+
 	socket.on('connect', function () {
 		$('#connection').addClass('connected');
 	});
@@ -54,11 +58,21 @@
 		discQueue.add(discId, true, function (data) {
 			var releaseId = release.id;
 
-			releaseQueue(releaseId, true, function (data) {
+			releaseQueue.add(releaseId, true, function (data) {
+				console.log(releaseId);
 			});
 
 			if (!releaseQueue.isBusy(releaseId)) {
 				releaseQueue.busy(releaseId, true);
+
+				$.ajax({
+					'url' : '/release/' + releaseId, 
+					'success' : function (data) {
+						discQueue.add(discId, true, function () {
+							$('.disc.disc-' + normalize(discId) + ' .releases').append($(data));
+						});
+					}
+				});
 			}
 		});
 
