@@ -73,3 +73,10 @@ body {
 	height: 18px;
 	line-height: 18px;
 }
+
+.disc {
+	margin-bottom: 10px;
+	padding: 3px;
+	border: 1px solid #333;
+	border-radius: 3px;
+}
