@@ -67,9 +67,9 @@ body {
 	min-width: 40px;
 	background-color: #1c1c1c;
 	border: 1px solid #333;
+	border-radius: 3px;
 	color: #fe2e64;
 	text-align: center;
-	border-radius: 3px;
 	height: 18px;
 	line-height: 18px;
 }
@@ -77,6 +77,41 @@ body {
 .disc {
 	margin-bottom: 10px;
 	padding: 3px;
-	border: 1px solid #333;
+}
+
+.disc .ids {
+	color: #fe2e64;
+}
+
+.release {
+	overflow: hidden;
+}
+
+.release .albumart {
+	float: left;
+	overflow: hidden;
+	width: 100px;
+	height: 100px;
+	border: 1px solid #c1c1c1;
 	border-radius: 3px;
+}
+
+.release .albumart img {
+	display: block;
+	height: 100px;
+	width: 100px;
+}
+
+.release .info {
+	float: left;
+	margin-left: 10px;
+}
+
+.release .info span {
+	display: inline-block;
+	margin-top: 1px;
+	margin-right: 6px;
+	padding: 0 1px 0 1px;
+	color: #58d3f7;
+	background-color: #1c1c1c;
 }

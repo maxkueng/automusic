@@ -67,7 +67,6 @@
 			discQueue.add(discId, true, function () {
 				var r = $('.release.release-' + normalize(releaseId));
 				if (r[0]) {
-					console.log('rok', releaseId);
 					var d = r.parents('.disc:first');
 					d.addClass('disc-' + normalize(discId));
 					d.find('.ids:first').append($('<span class="discid">' + discId + '</span>'));
@@ -80,6 +79,7 @@
 
 				var d = $('.disc.disc-' + normalize(discId));
 				d.find('.releases:first').append($(release));
+					console.log(d, releaseId);
 			});
 
 			if (!discQueue.isBusy(discId)) {
