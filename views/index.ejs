@@ -79,7 +79,7 @@
 
 				var d = $('.disc.disc-' + normalize(discId));
 				d.find('.releases:first').append($(release));
-					console.log(d, releaseId);
+					console.log('.disc.disc-' + normalize(discId), releaseId);
 			});
 
 			if (!discQueue.isBusy(discId)) {
