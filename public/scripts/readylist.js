@@ -47,7 +47,7 @@
 	ReadyList.prototype.ready = function (name, ready) {
 		if (!this.exists(name)) return null;
 		this.list[name].ready = ready;
-		this.execute(name);
+		this.executeSerial(name);
 	};
 
 	ReadyList.prototype.add = function (name, create, callback) {
@@ -56,7 +56,21 @@
 
 		this.list[name].callbacks.push(callback);
 		this.queueLength++;
-		this.execute(name);
+		this.executeSerial(name);
+	};
+
+	ReadyList.prototype.executeSerial = function (name) {
+		if (!this.exists(name)) return false;
+		if (!this.isReady(name)) return;
+
+		var callbacks = this.list[name].callbacks;
+		var callback = callbacks.shift();
+		var self = this;
+		if (callback) {
+			callback.call(this, this.data(name), function () {
+				self.executeSerial(name);
+			});
+		}
 	};
 
 	ReadyList.prototype.execute = function (name) {
@@ -65,6 +79,7 @@
 
 		var self = this;
 		var callbacks = this.list[name].callbacks;
+
 		for (var callback; callback = callbacks.pop();) {
 			(function (cb) {
 				if (typeof cb === 'function') {

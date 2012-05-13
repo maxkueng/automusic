@@ -6,7 +6,7 @@ body {
 }
 
 #connection {
-	position: absolute;
+	position: fixed;
 	top: 10px;
 	right: 10px;
 	height: 18px;
@@ -25,7 +25,7 @@ body {
 }
 
 #scanning {
-	position: absolute;
+	position: fixed;
 	top: 10px;
 	right: 35px;
 	height: 18px;
@@ -45,7 +45,7 @@ body {
 }
 
 #queues dl {
-	position: absolute;
+	position: fixed;
 	top: 10px;
 	right: 60px;
 }
@@ -81,10 +81,14 @@ body {
 
 .disc .ids {
 	color: #fe2e64;
+	margin-bottom: 3px;
+}
+
+.disc .ids span {
+	margin-right: 10px;
 }
 
 .release {
-	overflow: hidden;
 }
 
 .release .albumart {
@@ -103,8 +107,15 @@ body {
 }
 
 .release .info {
-	float: left;
 	margin-left: 10px;
+}
+
+.release.activated {
+	min-height: 110px;
+}
+
+.release.activated .info {
+	margin-left: 110px;
 }
 
 .release .info span {
@@ -114,4 +125,13 @@ body {
 	padding: 0 1px 0 1px;
 	color: #58d3f7;
 	background-color: #1c1c1c;
+}
+
+.release .info .medium .discid {
+	background-color: transparent;
+	color: #fe2e64;
+}
+
+.release .info .medium .tracks {
+	display: none;
 }

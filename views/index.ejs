@@ -21,14 +21,15 @@
 </div>
 
 <script type="text/javascript">
+
+function normalize (str) {
+	return str.replace(/[^a-z0-9]+/ig, '');
+}
+
 (function ($) {
 	var discQueue = new ReadyList();
 	var releaseQueue = new ReadyList();
 	var socket = io.connect('http://127.0.0.1:9090');
-
-	function normalize (str) {
-		return str.replace(/[^a-z0-9]+/ig, '');
-	}
 
 	$('#scanning').click(function () {
 		$.ajax({ 'url' : '/api/scan' });
@@ -58,28 +59,45 @@
 
 	socket.on('disc', function (discId) { });
 
+	socket.on('albumart', function (releaseId) {
+		var release = $('.release.release-' + normalize(releaseId));
+		if (!release[0]) return;
+
+		var img = release.find('.albumart img');
+		img.attr('src', '/albumart/' + releaseId);
+	});
+
 	socket.on('release', function (discId, releaseId) {
 
 		var disc;
 		var release;
 
-		releaseQueue.add(releaseId, true, function (data) {
-			discQueue.add(discId, true, function () {
+		releaseQueue.add(releaseId, true, function (rData, rDone) {
+			discQueue.add(discId, true, function (dData, dDone) {
 				var r = $('.release.release-' + normalize(releaseId));
 				if (r[0]) {
 					var d = r.parents('.disc:first');
 					d.addClass('disc-' + normalize(discId));
+					d.data('discids', d.data('discids') + ' ' + discId)
 					d.find('.ids:first').append($('<span class="discid">' + discId + '</span>'));
-					return;
+					dDone();
+
+				} else {
+					if (!$('.disc.disc-' + normalize(discId))[0]) {
+						$('#discs').append($(disc));
+					}
+					dDone();
+
+					var d = $('.disc.disc-' + normalize(discId));
+					d.find('.releases:first').append($(release));
 				}
 
-				if (!$('.disc.disc-' + normalize(discId))[0]) {
-					$('#discs').append($(disc));
+				r = d.find('.release.release-' + normalize(releaseId));
+				var md = r.find('.medium.disc-' + normalize(discId) + ' .discid');
+				if (md[0]) {
+					md.html(discId.substr(0, 5));
 				}
-
-				var d = $('.disc.disc-' + normalize(discId));
-				d.find('.releases:first').append($(release));
-					console.log('.disc.disc-' + normalize(discId), releaseId);
+				rDone();
 			});
 
 			if (!discQueue.isBusy(discId)) {
@@ -105,6 +123,19 @@
 					releaseQueue.ready(releaseId, true);
 				}
 			});
+		}
+	});
+
+	function selectRelease (discId, releaseId) {
+		$.ajax({ 'url' : '/api/setdiscrelease/' + discId + '/' + releaseId });
+	}
+
+	$('.release .buttons .select').live('click', function () {
+		var releaseId = $(this).parents('.release').data('releaseid');
+		var discIds = $(this).parents('.disc').data('discids').trim().split(' ');
+
+		for (var i = 0; i < discIds.length; i++) {
+			selectRelease(discIds[i], releaseId);			
 		}
 	});
 })(jQuery);

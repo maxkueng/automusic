@@ -1,5 +1,5 @@
-<div class="disc disc-<%=: disc.id | normalize %>">
-	<div class="ids"><span class="discid"><%= disc.id%></span></div>
+<div class="disc disc-<%=: disc.id | normalize %>" data-discids="<%= disc.id %>">
+	<div class="ids"><span data-discid="<%= disc.id %>" class="discid"><%= disc.id %></span></div>
 	<div class="releases">
 	</div>
 </div>

@@ -1,6 +1,8 @@
+var path = require('path');
 var express = require('express');
 var socketio = require('socket.io');
 var ejs = require('ejs');
+var im = require('imagemagick');
 var Automusic = require('./lib/automusic').Automusic;
 var automusic = new Automusic();
 
@@ -31,6 +33,10 @@ automusic.on('disc', function (disc) {
 
 automusic.on('release', function (discId, release) {
 	io.sockets.emit('release', discId, release);
+});
+
+automusic.on('albumart', function (releaseId) {
+	io.sockets.emit('albumart', releaseId);
 });
 
 automusic.on('queueupdate', function (queue, len) {
@@ -75,6 +81,30 @@ app.get('/release/:id', function (req, res) {
 	});
 });
 
+app.get('/albumart/:releaseId', function (req, res) {
+	var releaseId = req.params['releaseId'];
+	var albumartDir = require('./lib/automusic').config.albumart_dir;
+console.log(path.join(albumartDir, releaseId + '.jpg'));
+	im.resize({
+		'srcPath' : path.join(albumartDir, releaseId + '.jpg'),
+		'format' : 'jpg', 
+		'strip' : false,
+		'width' : 100,
+		'height' : 100,
+		'customArgs' : [
+			'-gravity', 'center', 
+			'-extent', '100x100'
+		]
+	}, function(err, stdout, stderr) {
+		console.log(err, stderr);
+		if (!err) {
+			res.contentType("image/jpeg");
+			res.end(stdout, 'binary');
+		}
+	});
+	
+});
+
 app.get('/api/status', function (req, res) {
 	res.send('Automusic API is running');
 }); 
@@ -82,8 +112,14 @@ app.get('/api/status', function (req, res) {
 app.get('/api/scan', function (req, res) {
 	res.send('Scanning');
 	automusic.scan();
-	return;
 }); 
+
+app.get('/api/setdiscrelease/:discId/:releaseId', function (req, res) {
+	res.send('OK');
+	var discId = req.params['discId'];
+	var releaseId = req.params['releaseId'];
+	automusic.setDiscRelease(discId, releaseId);
+});
 
 
 
