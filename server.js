@@ -81,10 +81,21 @@ app.get('/release/:id', function (req, res) {
 	});
 });
 
+app.get('/xrelease/:id', function (req, res) {
+	var releaseId = req.params['id'];
+	var release = automusic.release(releaseId);
+
+	res.render('release.ejs', {
+		'req' : req, 
+		'res' : res, 
+		'release' : release
+	});
+});
+
 app.get('/albumart/:releaseId', function (req, res) {
 	var releaseId = req.params['releaseId'];
 	var albumartDir = require('./lib/automusic').config.albumart_dir;
-console.log(path.join(albumartDir, releaseId + '.jpg'));
+
 	im.resize({
 		'srcPath' : path.join(albumartDir, releaseId + '.jpg'),
 		'format' : 'jpg', 
