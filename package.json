@@ -1,29 +1,30 @@
 {
-  "author": "Max Kueng <me@maxkueng.com> (http://maxkueng.com/)",
-  "name": "automusic",
-  "description": "A music tagging server",
-  "version": "0.0.1",
-  "homepage": "http://maxkueng.com/automusic",
-  "repository": {
-    "url": "git@github.com:maxkueng/automusic.git"
-  },
-  "main": "server.js",
-  "dependencies": {
-    "async" : "*", 
-    "ejs" : "*", 
-    "express" : "*", 
-    "imagemagick" : "*", 
-    "lastfm" : "*", 
-    "metaflac" : "*", 
-    "musicbrainz" : "*", 
-    "redis" : "*", 
-    "socket.io" : "*", 
-    "trickle" : "*", 
-    "walk" : "*"
-  },
-  "devDependencies": {},
-  "optionalDependencies": {},
-  "engines": {
-    "node": "*"
-  }
+	"author" : "Max Kueng <me@maxkueng.com> (http://maxkueng.com/)",
+	"name" : "automusic",
+	"description" : "A music tagging server",
+	"version" : "0.0.1",
+	"homepage" : "http://maxkueng.com/automusic",
+	"repository" : {
+		"url" : "git@github.com:maxkueng/automusic.git"
+	},
+	"main" : "server.js",
+	"dependencies" : {
+		"async" : "*", 
+		"ejs" : "*", 
+		"express" : "*", 
+		"imagemagick" : "*", 
+		"lastfm" : "*", 
+		"metaflac" : "*", 
+		"musicbrainz" : "*", 
+		"redis" : "*", 
+		"socket.io" : "*", 
+		"trickle" : "*", 
+		"walk" : "*"
+	},
+	"scripts" : {
+		"start" : "node server.js"
+	}, 
+	"engines" : {
+		"node" : "*"
+	}
 }
