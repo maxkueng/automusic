@@ -22,7 +22,8 @@
 		"walk" : "*"
 	},
 	"scripts" : {
-		"start" : "node server.js"
+		"start" : "node server.js", 
+		"clean" : "node redisclean.js"
 	}, 
 	"engines" : {
 		"node" : "*"

@@ -92,7 +92,13 @@ body {
 }
 
 .release .albumart {
+	display: none;
+}
+
+.release.selected .albumart {
+	display: block;
 	float: left;
+	position: relative;
 	overflow: hidden;
 	width: 100px;
 	height: 100px;
@@ -100,21 +106,69 @@ body {
 	border-radius: 3px;
 }
 
-.release .albumart img {
+.release.selected .albumart .btn-row {
+	display: none;
+}
+
+.release.selected .albumart:hover .curtain {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #000;
+	opacity: 0.5;
+}
+
+.release.selected .albumart:hover .btn-row {
+	display: block;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	text-align: center;
+	padding: 0 2px 2px 2px;
+}
+
+.release.selected .albumart img:after {
+	display: block;
+	content:"?";
+	font-size: 100px;
+	line-height: 100px;
+	text-align: center;
+	color: #444;
+	font-weight: bold;
+}
+
+.release.selected .albumart.nok img:after {
+	display: block;
+	content:"X";
+	font-size: 100px;
+	line-height: 100px;
+	text-align: center;
+	color: #444;
+	font-weight: bold;
+}
+
+.release .albumart.ok img {
 	display: block;
 	height: 100px;
 	width: 100px;
+}
+
+.release.selected .albumart.ok img:after {
+	content : "";
 }
 
 .release .info {
 	margin-left: 10px;
 }
 
-.release.activated {
+.release.selected {
 	min-height: 110px;
 }
 
-.release.activated .info {
+.release.selected .info {
 	margin-left: 110px;
 }
 
@@ -127,11 +181,62 @@ body {
 	background-color: #1c1c1c;
 }
 
-.release .info .medium .discid {
+.release .medium {
+	margin-top: 5px;
+}
+
+.release .medium .discid {
 	background-color: transparent;
 	color: #fe2e64;
 }
 
-.release .info .medium .tracks {
+.release .medium .tracklist {
+	margin-top: 5px;
 	display: none;
 }
+
+.release.selected .medium .tracklist {
+	display: block;
+}
+
+.release .tracklist .track span {
+	text-align: center;
+	padding: 0 4px 0 4px;
+	background-color: #1c1c1c;
+	border: 1px solid #333;
+	border-radius: 3px;
+	color: #444;
+	height: 18px;
+	line-height: 18px;
+}
+
+.release .tracklist .track .step.completed {
+	color: #64fe2e;
+}
+
+.release .tracklist .track .position {
+	min-width: 30px;
+	color: #eee;
+	font-weight: bold;
+}
+
+
+
+
+			/*-------------impromptu---------- */
+			.jqifade{ position: absolute; background-color: #aaaaaa; }
+			div.jqi{ width: 400px; font-family: Verdana, Geneva, Arial, Helvetica, sans-serif; position: absolute; background-color: #ffffff; font-size: 11px; text-align: left; border: solid 1px #eeeeee; -moz-border-radius: 10px; -webkit-border-radius: 10px; padding: 7px; }
+			div.jqi .jqicontainer{ font-weight: bold; }
+			div.jqi .jqiclose{ position: absolute; top: 4px; right: -2px; width: 18px; cursor: default; color: #bbbbbb; font-weight: bold; }
+			div.jqi .jqimessage{ padding: 10px; line-height: 20px; color: #444444; }
+			div.jqi .jqibuttons{ text-align: right; padding: 5px 0 5px 0; border: solid 1px #eeeeee; background-color: #f4f4f4; }
+			div.jqi button{ padding: 3px 10px; margin: 0 10px; background-color: #2F6073; border: solid 1px #f4f4f4; color: #ffffff; font-weight: bold; font-size: 12px; }
+			div.jqi button:hover{ background-color: #728A8C; }
+			div.jqi button.jqidefaultbutton{ background-color: #BF5E26; }
+			.jqiwarning .jqi .jqibuttons{ background-color: #BF5E26; }
+			
+            div.jqi .jqimessage .field{ padding: 5px 0; }
+			div.jqi .jqimessage .field label{ display: block; clear: left; float: left; width: 100px; }
+			div.jqi .jqimessage .field input{ width: 150px; border: solid 1px #777777; }
+			div.jqi .jqimessage .field input.error{ width: 150px; border: solid 1px #ff0000; }
+			/*-------------------------------- */

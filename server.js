@@ -35,8 +35,16 @@ automusic.on('release', function (discId, release) {
 	io.sockets.emit('release', discId, release);
 });
 
-automusic.on('albumart', function (releaseId) {
-	io.sockets.emit('albumart', releaseId);
+automusic.on('releaseupdated', function (releaseId) {
+	io.sockets.emit('releaseupdated', releaseId);
+});
+
+automusic.on('albumart', function (err, releaseId) {
+	io.sockets.emit('albumart', err, releaseId);
+});
+
+automusic.on('trackmetadata', function (releaseId, recordingId) {
+	io.sockets.emit('trackmetadata', releaseId, recordingId);
 });
 
 automusic.on('queueupdate', function (queue, len) {
@@ -130,6 +138,20 @@ app.get('/api/setdiscrelease/:discId/:releaseId', function (req, res) {
 	var discId = req.params['discId'];
 	var releaseId = req.params['releaseId'];
 	automusic.setDiscRelease(discId, releaseId);
+	io.sockets.emit('releaseselected', discId, releaseId);
+});
+
+app.get('/api/updatealbumart/:releaseId/:uri', function (req, res) {
+	res.send('OK');
+	var releaseId = req.params['releaseId'];
+	var uri = req.params['uri'];
+	automusic.updateAlbumArt(releaseId, uri);
+});
+
+app.get('/api/updaterelease/:releaseId', function (req, res) {
+	res.send('OK');
+	var releaseId = req.params['releaseId'];
+	automusic.updateRelease(releaseId);
 });
 
 

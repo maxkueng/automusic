@@ -1,8 +1,13 @@
-<div class="release release-<%=: release.id | normalize %> activated" data-releaseid="<%= release.id %>">
+<div class="release release-<%=: release.id | normalize %>" data-releaseid="<%= release.id %>">
 	<div class="albumart">
 		<img src="" />
+		<div class="curtain"></div>
+		<div class="btn-row">
+			<button class="changelabumart" type="button">Change</button>
+		</div>
 	</div>
 	<div class="buttons">
+		<button class="update" type="button">Update</button> 
 		<button class="select" type="button">Select</button> 
 		<button class="albumartok" type="button">Albumart OK</button>
 	</div>
@@ -36,12 +41,12 @@
 				<span class="format"><%= medium.format %></span>
 				<span class="tracks"><%= medium.tracks.length %> tracks</span>
 
-				<div class="tracks">
+				<div class="tracklist">
 				<% for (var ii = 0; ii < medium.tracks.length; ii++) { %>
-					<div class="track">
+					<div class="track recording-<%=: medium.tracks[ii].recording.id | normalize %>" data-recordingid="<%= medium.tracks[ii].recording.id %>">
 						<span class="position"><%= medium.tracks[ii].position %></span>
-						<span class="step metadata">Metadata</span>
-						<span class="step vorbiscomment">VorbisComment</span>
+						<span class="step metadata">Meta</span>
+						<span class="step vorbiscomment">VC</span>
 						<span class="step mp3">MP3</span>
 						<span class="step ogg">OGG</span>
 					</div>

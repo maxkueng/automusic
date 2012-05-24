@@ -59,16 +59,34 @@ function normalize (str) {
 
 	socket.on('disc', function (discId) { });
 
-	socket.on('albumart', function (releaseId) {
+	socket.on('releaseselected', function (discId, releaseId) {
+		$('.disc.disc-' + normalize(discId) + ' .release').hide();
+		$('.disc.disc-' + normalize(discId) + ' .release.release-' + normalize(releaseId)).show();
+		$('.disc.disc-' + normalize(discId) + ' .release.release-' + normalize(releaseId)).addClass('selected');
+	});
+
+	socket.on('trackmetadata', function (releaseId, recordingId) {
+		$('.track.recording-' + normalize(recordingId) + ' .step.metadata').addClass('completed');
+	});
+
+	socket.on('albumart', function (err, releaseId) {
 		var release = $('.release.release-' + normalize(releaseId));
 		if (!release[0]) return;
+		var aa = release.find('.albumart');
 
+		if (err) {
+			aa.removeClass('ok');
+			aa.addClass('nok');
+			return;
+		}
+
+		aa.removeClass('nok');
+		aa.addClass('ok');
 		var img = release.find('.albumart img');
 		img.attr('src', '/albumart/' + releaseId);
 	});
 
 	socket.on('release', function (discId, releaseId) {
-
 		var disc;
 		var release;
 
@@ -126,9 +144,35 @@ function normalize (str) {
 		}
 	});
 
+	socket.on('releaseupdated', function (releaseId) {
+		$.ajax({
+			'url' : '/release/' + releaseId, 
+			'success' : function (html) {
+				var release = $('.release.release-' + normalize(releaseId));
+				if (release[0]) {
+					release.replaceWith(html);
+				}
+			}
+		});
+	});
+
 	function selectRelease (discId, releaseId) {
 		$.ajax({ 'url' : '/api/setdiscrelease/' + discId + '/' + releaseId });
 	}
+
+	function updateRelease (releaseId) {
+		$.ajax({ 'url' : '/api/updaterelease/' + releaseId });
+	}
+
+	function updateAlbumArt (releaseId, uri) {
+		uri = encodeURIComponent(uri);
+		$.ajax({ 'url' : '/api/updatealbumart/' + releaseId + '/' + uri });
+	}
+
+	$('.release .buttons .update').live('click', function () {
+		var releaseId = $(this).parents('.release').data('releaseid');
+		updateRelease(releaseId);
+	});
 
 	$('.release .buttons .select').live('click', function () {
 		var releaseId = $(this).parents('.release').data('releaseid');
@@ -137,6 +181,22 @@ function normalize (str) {
 		for (var i = 0; i < discIds.length; i++) {
 			selectRelease(discIds[i], releaseId);			
 		}
+	});
+
+	$('.release .buttons .albumartok').live('click', function () {
+		var releaseId = $(this).parents('.release').data('releaseid');
+	});
+
+	$('.release .albumart button.changelabumart').live('click', function () {
+		var releaseId = $(this).parents('.release').data('releaseid');
+
+		$.prompt('<div class="field"><label for="aauri">URI</label><input type="text" name="aauri" value="" /></div>', {
+			'buttons' : { 'OK' : true, 'Cancel' : false }, 
+			'submit' : function (event, value, message, formVals) { return true; }, 
+			'callback' : function (event, value, message, formVals) {
+				if (value) updateAlbumArt(releaseId, formVals.aauri);
+			}
+		});
 	});
 })(jQuery);
 	</script>
